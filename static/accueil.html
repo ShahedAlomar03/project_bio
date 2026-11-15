@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Accueil</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="card">
+    <h1>Accueil</h1>
+    <form id="form">
+      <label>Nom</label>
+      <input id="nom" required>
+      <label>Prénom</label>
+      <input id="prenom" required>
+      <label>Mot de passe</label>
+      <input id="password" type="password" required>
+      <button type="submit">Entrer</button>
+      <div id="msg" class="msg"></div>
+    </form>
+  </div>
+
+  <script>
+    const msg = document.getElementById("msg");
+    document.getElementById("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.className = "msg"; msg.textContent = "";
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nom: nom.value, prenom: prenom.value, password: password.value })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        sessionStorage.setItem("token", data.token);
+        location.href = "/calcul";
+      } else {
+        msg.className = "msg err";
+        msg.textContent = data.detail || "Erreur";
+      }
+    });
+  </script>
+</body>
+</html>

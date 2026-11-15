@@ -1,0 +1,54 @@
+:root {
+  --bg1: #1e1b4b;
+  --bg2: #0e7490;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --soft: #f8fafc;
+  --brand: #4f46e5;
+  --brand-dark: #4338ca;
+  --ok: #16a34a;
+  --err: #dc2626;
+}
+
+* { box-sizing: border-box; font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+
+body {
+  margin: 0; min-height: 100vh; padding: 16px;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(1200px 600px at 10% -10%, #6366f1 0%, transparent 60%),
+              linear-gradient(135deg, var(--bg1), var(--bg2));
+  color: var(--ink);
+}
+
+.card {
+  background: #fff; width: 100%; max-width: 400px; padding: 26px 30px 22px;
+  border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,.35);
+}
+h1 { margin: 0 0 4px; font-size: 26px; text-align: center; letter-spacing: -.3px; }
+.subtitle { margin: 0 0 18px; text-align: center; color: var(--muted); font-size: 14px; }
+
+label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin: 14px 0 6px; }
+input {
+  width: 100%; padding: 12px 14px; font-size: 15px; color: var(--ink);
+  border: 1.5px solid var(--line); border-radius: 10px; background: var(--soft);
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+input:hover { border-color: #cbd5e1; }
+input:focus { outline: none; background: #fff; border-color: var(--brand); box-shadow: 0 0 0 4px rgba(79,70,229,.15); }
+
+button {
+  width: 100%; margin-top: 20px; padding: 13px; border: 0; border-radius: 10px;
+  background: var(--brand); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: background .15s, transform .05s;
+}
+button:hover { background: var(--brand-dark); }
+button:active { transform: translateY(1px); }
+button.secondary { background: #eef2ff; color: var(--brand-dark); }
+button.secondary:hover { background: #e0e7ff; }
+
+.msg { margin-top: 14px; font-size: 14px; text-align: center; min-height: 18px; }
+.msg.err { color: var(--err); }
+.msg.ok { color: var(--ok); }
+.sep { margin: 14px 0 0; padding-top: 14px; border-top: 1px solid var(--line); text-align: center; font-size: 13px; color: var(--muted); }
+.sep + button { margin-top: 10px; }

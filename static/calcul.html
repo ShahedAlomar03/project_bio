@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Calcul</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start;
+           height: 100vh; padding: 0; overflow: auto; }
+
+    /* Barre du haut */
+    .topbar { display: flex; align-items: center; gap: 14px; padding: 12px 24px;
+              background: rgba(15,23,42,.35); backdrop-filter: blur(6px); color: #fff; }
+    .brand { font-weight: 700; font-size: 17px; letter-spacing: -.2px; }
+    .user { margin-left: auto; font-size: 14px; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .logout { width: auto; margin: 0; padding: 9px 16px; font-size: 14px;
+              background: #ef4444; border-radius: 9px; }
+    .logout:hover { background: #dc2626; }
+
+    /* Contenu */
+    .layout { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1.15fr; gap: 18px;
+              width: 100%; max-width: 1000px; margin: 0 auto; padding: 18px 20px; align-content: center; }
+    .panel { background: #fff; border-radius: 18px; padding: 18px 22px 20px;
+             box-shadow: 0 20px 40px -12px rgba(0,0,0,.35); }
+    .panel h2 { margin: 0 0 10px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+
+    .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .fields label { margin: 10px 0 5px; font-size: 12px; }
+    .field { position: relative; }
+    .field input { padding: 10px 40px 10px 12px; font-size: 15px; }
+    .field span { position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+                  font-size: 11px; color: var(--muted); pointer-events: none; }
+    .fields .full { grid-column: 1 / -1; }
+    .hint { margin: 12px 0 0; font-size: 12px; color: var(--muted); line-height: 1.4; }
+
+    .op { border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px 12px; margin-bottom: 10px; background: var(--soft); }
+    .op-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+    .num { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+           background: var(--brand); color: #fff; font-size: 12px; }
+    .formule { margin: 4px 0 8px; font-size: 12px; color: var(--muted); }
+    .vals { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .val { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; }
+    .val small { display: block; font-size: 11px; color: var(--muted); }
+    .val b { font-size: 19px; letter-spacing: -.3px; }
+
+    .check { margin-top: 4px; padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 600;
+             text-align: center; background: #dcfce7; color: #166534; }
+    .check.err { background: #fee2e2; color: #991b1b; }
+
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; padding: 12px; gap: 12px; }
+      .topbar { padding: 10px 14px; }
+      .user { display: none; }
+      .logout { margin-left: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Bilans de matière</div>
+    <div class="user" id="titre"></div>
+    <button class="logout" id="logout">Déconnecter</button>
+  </header>
+
+  <main class="layout">
+    <section class="panel">
+      <h2>Données d'entrée</h2>
+      <div class="fields">
+        <div class="full"><label for="m0">Jus brut m0</label>
+          <div class="field"><input id="m0" type="number" min="0" step="any" value="1000" inputmode="decimal"><span>kg/h</span></div></div>
+        <div><label for="x0">Matières solubles x0</label>
+          <div class="field"><input id="x0" type="number" min="0" max="100" step="any" value="10" inputmode="decimal"><span>%</span></div></div>
+        <div><label for="residus">Particules filtrées</label>
+          <div class="field"><input id="residus" type="number" min="0" step="any" value="20" inputmode="decimal"><span>kg/h</span></div></div>
+        <div><label for="mR">Jus concentré ajouté mR</label>
+          <div class="field"><input id="mR" type="number" min="0" step="any" value="100" inputmode="decimal"><span>kg/h</span></div></div>
+        <div><label for="xR">Concentration xR</label>
+          <div class="field"><input id="xR" type="number" min="0" max="100" step="any" value="40" inputmode="decimal"><span>%</span></div></div>
+      </div>
+      <p class="hint">Les valeurs ne peuvent pas être négatives. Les concentrations restent entre 0 et 100 %. Les particules filtrées doivent être inférieures à m0.</p>
+    </section>
+
+    <section class="panel">
+      <h2>Résultats</h2>
+      <div class="op">
+        <div class="op-head"><span class="num">1</span> Filtration</div>
+        <p class="formule">m1 = m0 − résidus &nbsp;·&nbsp; x1 = m0 × x0 / m1</p>
+        <div class="vals">
+          <div class="val"><small>Débit m1</small><b id="m1">–</b></div>
+          <div class="val"><small>Concentration x1</small><b id="x1">–</b></div>
+        </div>
+      </div>
+      <div class="op">
+        <div class="op-head"><span class="num">2</span> Mélange</div>
+        <p class="formule">m2 = m1 + mR &nbsp;·&nbsp; x2 = (m1·x1 + mR·xR) / m2</p>
+        <div class="vals">
+          <div class="val"><small>Débit m2</small><b id="m2">–</b></div>
+          <div class="val"><small>Concentration x2</small><b id="x2">–</b></div>
+        </div>
+      </div>
+      <div class="check" id="check"></div>
+    </section>
+  </main>
+
+  <script>
+    const token = sessionStorage.getItem("token");
+
+    // Protection : si non connecté -> retour page 1
+    (async () => {
+      if (!token) return (location.href = "/");
+      const res = await fetch("/api/me", { headers: { Authorization: "Bearer " + token } });
+      if (!res.ok) { sessionStorage.removeItem("token"); return (location.href = "/"); }
+      const u = await res.json();
+      document.getElementById("titre").textContent = u.prenom + " " + u.nom;
+    })();
+
+    // Bouton Déconnecter
+    document.getElementById("logout").addEventListener("click", async () => {
+      await fetch("/api/logout", { method: "POST", headers: { Authorization: "Bearer " + token } });
+      sessionStorage.removeItem("token");
+      location.href = "/";
+    });
+
+    const $ = (id) => document.getElementById(id);
+    const fmt = (v, unite) => v.toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " " + unite;
+
+    // Limites : jamais en dessous de 0, concentrations au plus 100 %
+    const limites = { m0: [0, Infinity], x0: [0, 100], residus: [0, Infinity], mR: [0, Infinity], xR: [0, 100] };
+
+    function calculer() {
+      const m0 = parseFloat($("m0").value);
+      const x0 = parseFloat($("x0").value) / 100;
+      const residus = parseFloat($("residus").value);
+      const mR = parseFloat($("mR").value);
+      const xR = parseFloat($("xR").value) / 100;
+      const check = $("check");
+      const vide = () => ["m1", "x1", "m2", "x2"].forEach((i) => ($(i).textContent = "–"));
+
+      if ([m0, x0, residus, mR, xR].some(isNaN)) { vide(); check.className = "check"; check.textContent = "Remplis tous les champs."; return; }
+      if (m0 <= 0 || residus >= m0) {
+        vide(); check.className = "check err";
+        check.textContent = "Les particules filtrées doivent être inférieures à m0 (et m0 > 0).";
+        return;
+      }
+
+      // 1. Filtration
+      const m1 = m0 - residus;
+      const x1 = m0 * x0 / m1;
+      // 2. Mélange
+      const m2 = m1 + mR;
+      const x2 = (m1 * x1 + mR * xR) / m2;
+
+      $("m1").textContent = fmt(m1, "kg/h");
+      $("x1").textContent = fmt(100 * x1, "%");
+      $("m2").textContent = fmt(m2, "kg/h");
+      $("x2").textContent = fmt(100 * x2, "%");
+
+      // Vérification des bilans : matière totale et matières solubles
+      const errTot = (m0 + mR) - (residus + m2);
+      const errSol = (m0 * x0 + mR * xR) - m2 * x2;
+      const ok = Math.abs(errTot) < 1e-9 && Math.abs(errSol) < 1e-9;
+      check.className = "check" + (ok ? "" : " err");
+      check.textContent = ok
+        ? "✔ Bilans vérifiés : matière totale et matières solubles"
+        : "Erreur de bilan : " + errTot.toFixed(4) + " kg/h";
+    }
+
+    Object.entries(limites).forEach(([id, [min, max]]) => {
+      const el = $(id);
+      // Empêche de taper un signe moins, plus ou e
+      el.addEventListener("keydown", (e) => { if (["-", "+", "e", "E"].includes(e.key)) e.preventDefault(); });
+      // Corrige aussi les valeurs collées ou les flèches
+      el.addEventListener("input", () => {
+        if (el.value !== "") {
+          const n = parseFloat(el.value);
+          if (n < min || el.value.startsWith("-")) el.value = min;
+          else if (n > max) el.value = max;
+        }
+        calculer();
+      });
+      el.addEventListener("blur", () => { if (el.value === "") { el.value = min; calculer(); } });
+    });
+    calculer();
+  </script>
+</body>
+</html>
